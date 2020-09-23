@@ -6,16 +6,15 @@
 # Version: 0.1
 # License: MIT
 
-"""Importation des modules"""
+"""Import modules"""
 import sys
-import json
 from random import sample
 import pygame
 
 
 class Board:
-    """objet plateau qui regroupe les coordonnées des différents éléments du
-       jeu (murs, depart, arrivée, guarde, equipements...)"""
+    """board object which regroup the coordinates of the game's elements
+       (walls, start, end, guard, components...)"""
     def __init__(self, x_tile, y_tile, tile_size):
         self.x_tile = x_tile
         self.y_tile = y_tile
@@ -25,68 +24,72 @@ class Board:
 
     @property
     def width(self):
-        """largeur plateau en px"""
+        """board's width in px"""
         return self.x_tile * self.tile_size
 
     @property
     def height(self):
-        """hauteur plateau en px"""
+        """board's height in px"""
         return self.y_tile * self.tile_size
 
     def read_map(self, map_path):
-        """lit un .json : 'w'=wall, 's'=start, 'e'=end, 'g'=guard, ' '=empty"""
-        with open(map_path) as file:
-            data = json.load(file)
-        # iter sur 2 boucle pour avoir ligne et colonnes soit
-        # un tuple de coordonnées une fois multiplier par la largeur d'une case
-        for y_index,line in enumerate(data):
-            for x_index,char in enumerate(line):
-                coord = ((x_index * self.tile_size,y_index * self.tile_size))
-                if char == 'w':
-                    self.walls.append(coord)
-                else:
-                    self.corridors.append(coord)
-                    if char == 's':
-                        setattr(self, 'start', coord)
-                    elif char == 'e':
-                        setattr(self, 'end', coord)
-                    elif char == 'g':
-                        setattr(self, 'guard', coord)
+        """reads a .txt : 'w'=wall, 's'=start, 'e'=end, 'g'=guard, ' '=empty"""
+        with open(map_path, 'r') as data:
+            for y_index,line in enumerate(data):
+                for x_index,char in enumerate(line.strip('\n')):
+                    coord = ((x_index * self.tile_size,
+                              y_index * self.tile_size))
+                    if char == 'w':
+                        self.walls.append(coord)
+                    else:
+                        self.corridors.append(coord)
+                        if char == 's':
+                            setattr(self, 'start', coord)
+                        elif char == 'e':
+                            setattr(self, 'end', coord)
+                        elif char == 'g':
+                            setattr(self, 'guard', coord)
 
     def set_components(self):
-        """recupère 3 coordonnées aleatoire parmis les cases libres"""
-        setattr(self, 'components', sample(list(self.available()), 3))
+        """randomly pick-up 3 coordinates in a list of available tiles
+            and create a dict {coordinate : index}"""
+        components = {}
+        component_list = sample(list(self.available()), 3)
+        for index, component in enumerate(component_list):
+            components[component] = index
+        setattr(self, 'components', components)
+
 
 
     def available(self):
-        """renvoi un emplacement qui peu recevoir un objet"""
+        """yields free coordinate"""
         for coord in self.corridors:
-            if coord != self.start and coord != self.end and coord != self.guard:
+            if coord!=self.start and coord!=self.end and coord!=self.guard:
                 yield coord
 
 class Macgyver:
-    """objet MacGyver sa position, ses possesions, il se deplace..."""
+    """Macgiver object his coordinates, his possessions... he can move"""
     def __init__(self, start):
         self.coord = start
         self.backpack = 0
 
     def move(self, vector_x, vector_y, board):
-        """déplace MacGyver vers la prochaine case"""
+        """move Macgyver to the next square"""
         x, y = self.coord
         next_step = (x + vector_x, y + vector_y)
         if next_step in board.corridors:
             if next_step in board.components:
-                board.components.remove(next_step)
+                del board.components[next_step]
                 self.backpack += 1
                 self.coord = next_step
             elif next_step == board.guard:
                 if self.backpack < 3:
-                    return 'you lose'
+                    return 'lose'
                 else:
                     self.coord = next_step
             elif next_step == board.end:
                 self.coord = next_step
-                return 'you win'
+                return 'win'
             else:
                 self.coord = next_step
             return 'running'
@@ -94,8 +97,8 @@ class Macgyver:
             return 'running'
 
 def display_txt(txt, size, color, surface, x = 'center', y = 'center'):
-    """Affiche le texte au milieu de la surface avec pygame
-       (c'est juste pour me simplifier la vie!)"""
+    """display the text in a middle of a surface with pygame
+       (just to make my life easier!)"""
     txt = str(txt)
     font = pygame.font.Font('resources/stocky.ttf', size)
     img_txt = font.render(txt, True, color)
@@ -106,36 +109,33 @@ def display_txt(txt, size, color, surface, x = 'center', y = 'center'):
     return surface.blit(img_txt, (x, y))
 
 class App:
-    """Le jeu dans pygame"""
+    """the game in pygame"""
     def __init__(self):
-        # initialise pygame
         pygame.init()
         pygame.display.set_caption("MacGyver")
 
     def main(self):
-        """fonction principale"""
-        # initialise le plateau(15 case large, 15 case haut,
-        # case de 32px)
+        """main function"""
         board = Board(15, 15, 32)
-        # place les murs, les couloirs, le depart, l'arrivée, le garde... sur le plateau
-        board.read_map('resources/structure.json')
-        # place les objets sur le plateau
+        board.read_map('resources/structure.txt')
         board.set_components()
-        # initialise l'instance de Mac(emplacement de départ)
         macgyver = Macgyver(board.start)
-        # la fenetre pygame
+
         screen = pygame.display.set_mode((board.width, board.height))
-        # charge les images depuis le repertoire resources
+
         wall_image = pygame.image.load('resources/wall.png')
         floor_image = pygame.image.load('resources/floor.png')
+        door_image = pygame.image.load('resources/trapdoor.png')
         guard_image = pygame.image.load('resources/guard.png')
-        component_image = pygame.image.load('resources/dart.png')
+        components_image = [pygame.image.load('resources/niddle.png'),
+                            pygame.image.load('resources/tube.png'),
+                            pygame.image.load('resources/ether.png')]
         mac_image = pygame.image.load('resources/mac.png')
-        # etat du jeu 'you lose'=perdu, 'you win'=gagné, 'running'=aucun des 2
+        splash_image = pygame.image.load('resources/splash.png')
+
         game_status = 'running'
 
         while True:
-            # boucle d'ecoute d'evenements pygame
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -156,20 +156,30 @@ class App:
                         elif event.key == pygame.K_ESCAPE:
                             pygame.quit()
                             sys.exit()
-            # affiche les images et rafraichi...
+
             for coord in board.walls:
                 screen.blit(wall_image, coord)
             for coord in board.corridors:
                 screen.blit(floor_image, coord)
-            for coord in board.components:
-                screen.blit(component_image, coord)
+            screen.blit(door_image, board.start)
+            screen.blit(door_image, board.end)
+            for key, value in board.components.items():
+                screen.blit(components_image[value], key)
             screen.blit(guard_image, board.guard)
             screen.blit(mac_image, macgyver.coord)
-            # l'etat du jeu a changé? :
+
             if game_status != 'running':
-                display_txt(game_status, 40, (180, 60, 20), screen, 'center', 100)
-                display_txt('Press RETURN to Replay', 14, (25, 25, 25), screen, 'center', 170)
-                display_txt('Press ESCAPE to Quit', 14, (25, 25, 25), screen, 'center', 200)
+                if game_status == 'lose':
+                    mac_image = splash_image
+                    display_txt('YOU LOSE', 40, (180, 60, 20), screen,
+                                'center', 100)
+                elif game_status == 'win':
+                    display_txt('YOU WIN', 40, (20, 60, 180), screen,
+                                'center', 100)
+                display_txt('Press RETURN to Replay', 14, (25, 25, 25), screen,
+                            'center', 170)
+                display_txt('Press ESCAPE to Quit', 14, (25, 25, 25), screen,
+                            'center', 200)
 
             pygame.display.update()
 
