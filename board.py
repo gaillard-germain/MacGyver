@@ -9,6 +9,7 @@
 """Import modules"""
 from random import sample
 
+
 class Board:
     """board object which regroup the coordinates of the game's elements
        (walls, start, end, guard, components...)"""
@@ -32,8 +33,8 @@ class Board:
     def read_map(self, map_path):
         """reads a .txt : 'w'=wall, 's'=start, 'e'=end, 'g'=guard, ' '=empty"""
         with open(map_path, 'r') as data:
-            for y_index,line in enumerate(data):
-                for x_index,char in enumerate(line.strip('\n')):
+            for y_index, line in enumerate(data):
+                for x_index, char in enumerate(line.strip('\n')):
                     coord = ((x_index * self.tile_size,
                               y_index * self.tile_size))
                     if char == 'w':
@@ -55,4 +56,3 @@ class Board:
         for index, component in enumerate(component_list):
             components[component] = index
         setattr(self, 'components', components)
-        
