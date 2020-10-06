@@ -6,6 +6,7 @@
 # Version: 0.1
 # License: MIT
 
+
 class Actor:
     """Macgiver object his coordinates, his possessions... he can move"""
     def __init__(self, start):

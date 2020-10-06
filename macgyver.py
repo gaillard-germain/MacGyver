@@ -53,8 +53,6 @@ class Macgyver:
             gui.draw(mac, board)
             pygame.display.update()
 
-        return 1
-
 
 if __name__ == '__main__':
     Macgyver().main()
