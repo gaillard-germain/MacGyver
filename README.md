@@ -16,6 +16,8 @@ The game's maze is create with the structure.txt file. It must have 15 lines of 
 ***! Only 1 guard, 1 start and 1 end.***  
 So, you can modify it to create your own map.  
 
+*Nota : in parallel of this project, i also create a random maze generator (not finished yet but fonctionnal). [Here](https://github.com/screw-pack/Mazer.git) is the link.*  
+
 ## About Graphism
 
 Images are from resources given with the project's instructions [macgyver_ressources.zip](https://s3-eu-west-1.amazonaws.com/course.oc-static.com/projects/macgyver_ressources.zip), but i allowed myself to modified and create some with Gimp. *Just to get it prettier...*

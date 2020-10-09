@@ -24,6 +24,8 @@ class Actor:
             if next_step in board.components:
                 del board.components[next_step]
                 self.backpack += 1
+        elif next_step == board.start:
+            self.coord = next_step
         elif next_step == board.guard:
             if self.backpack < 3:
                 self.status = 'dead'
