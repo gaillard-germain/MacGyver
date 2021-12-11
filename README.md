@@ -4,6 +4,8 @@ MacGyver is a game that i created for my third project in my OpenClassRooms form
 it use python 3.8 and pygame 2.0.0.dev6 (use pip install requirement.txt to install it in your python3 venv)  
 ***! at this time pygame 2.0.0.dev6 is the only version supported in a python3.8 virtual environment.***
 
+![MacGyver screenshot](mcgyver.png "MacGyver screenshot")
+
 ## About the structure
 
 The game's maze is create with the structure.txt file. It must have 15 lines of 15 characters.  
